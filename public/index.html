@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content horizontally */
+            background-color: #101010; /* Dark background */
+            font-family: 'Helvetica Neue', Arial, sans-serif; /* Clean font */
+            margin: 0; /* Remove default margin */
+            padding: 20px; /* Add padding */
+            color: #ffffff; /* White text color for better contrast */
+            overflow: hidden; /* Prevent scrollbars from appearing */
+        }
+        h1 {
+            margin: 20px 0; /* Space above and below the title */
+            font-size: 2rem; /* Large title */
+            color: #ffffff; /* White color for the title */
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid */
+            gap: 15px; /* Space between items */
+            width: 100%; /* Full width of the container */
+            max-width: 1200px; /* Limit the maximum width */
+            background-color: #444444; /* Dark grey background for gallery */
+            padding: 20px; /* Padding around gallery */
+            border-radius: 15px; /* Rounded corners for the gallery */
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); /* Subtle shadow for the gallery */
+            justify-content: center; /* Center contents in the gallery */
+        }
+        .image-container {
+            background-color: #555555; /* Brighter grey background for each item */
+            border-radius: 8px; /* Rounded corners */
+            padding: 10px; /* Padding around content */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Slightly stronger shadow */
+            text-align: center; /* Center title above the image */
+            transition: transform 0.2s; /* Smooth scaling */
+            cursor: pointer; /* Pointer on hover */
+        }
+        .image-container:hover {
+            transform: scale(1.03); /* Slightly enlarge on hover */
+        }
+        img {
+            max-width: 100%; /* Full width within the container */
+            border-radius: 5px; /* Rounded corners for images */
+        }
+        h4 {
+            margin: 10px 0; /* Space above and below the title */
+            color: #ffffff; /* White color for the title */
+            font-size: 1rem; /* Title font size */
+        }
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            background-color: rgba(0, 0, 0, 0.8); /* Black background with opacity */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+        .modal img {
+            max-width: 80%; /* Max width of the modal image */
+            max-height: 80%; /* Max height of the modal image */
+            border-radius: 5px; /* Rounded corners for modal images */
+        }
+    </style>
+    <script>
+        // Function to detect if developer tools are open
+        (function() {
+            const devtools = /./;
+            devtools.toString = function() {
+                window.close(); // Close the window when dev tools are opened
+            };
+
+            setInterval(function() {
+                console.log('%c ', devtools); // Trigger the detection
+            }, 1000);
+        })();
+
+        // Prevent right-click context menu
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+
+        // Prevent certain keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+                event.preventDefault(); // Disable F12 and Ctrl+Shift+I
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Image Gallery</h1>
+    <div class="gallery">
+        <script>
+            // Fetch images from the server
+            fetch('/api/images')
+                .then(response => response.json())
+                .then(images => {
+                    if (images.length === 0) {
+                        // Show a message if there are no images
+                        var message = document.createElement('h4');
+                        message.textContent = "No images available.";
+                        document.querySelector('.gallery').appendChild(message);
+                    } else {
+                        images.forEach((image, index) => {
+                            // Create a container for each image and title
+                            const container = document.createElement('div');
+                            container.className = 'image-container';
+                            
+                            // Create the image element
+                            const img = document.createElement('img');
+                            img.src = `/images/${image}`;
+                            img.alt = image;
+                            
+                            // Create the title element
+                            const date = new Date().toLocaleDateString();
+                            const title = document.createElement('h4');
+                            title.textContent = `[${date} - #${index + 1}]`; // Title format changed to "#n"
+                            
+                            // Add click event to open modal
+                            container.addEventListener('click', function() {
+                                openModal(img.src);
+                            });
+                            
+                            // Append title and image to the container
+                            container.appendChild(title);
+                            container.appendChild(img);
+                            
+                            // Append the container to the gallery
+                            document.querySelector('.gallery').appendChild(container);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching images:', error);
+                });
+
+            // Modal functionality
+            function openModal(src) {
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                
+                const modalImage = document.createElement('img');
+                modalImage.src = src;
+
+                modal.appendChild(modalImage);
+                document.body.appendChild(modal);
+
+                modal.style.display = 'flex'; // Make modal visible
+
+                // Close the modal when clicking on it
+                modal.addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                });
+            }
+        </script>
+    </div>
+</body>
+</html>
